@@ -1,0 +1,25 @@
+{
+  "name": "gulp-ci",
+  "version": "1.0.0",
+  "description": "Continuous Integration (CI) with Gulp",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sebastianperruolo/gulp-ci.git"
+  },
+  "keywords": [
+    "gulp",
+    "ci",
+    "continuous",
+    "integration"
+  ],
+  "author": "Sebastián Perruolo",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/sebastianperruolo/gulp-ci/issues"
+  },
+  "homepage": "https://github.com/sebastianperruolo/gulp-ci#readme"
+}
