@@ -1,6 +1,5 @@
 
 const gulpLib = require('gulp');
-const PluginError = require('plugin-error');
 const argv = require('yargs').argv;
 const inquirer = require('inquirer');
 const sequence = require('run-sequence');
@@ -34,9 +33,15 @@ function gulpCi(_gulp) {
         function _defineSequence(taskName, taskList) {
             //console.info(`action-define > ${taskName}`);
             _gulp.task(taskName, function (done) {
-                
-                globals = buildGlobals(mappers);
+                if (name === taskName) {
+                    console.log('building globals ' + taskName);
+                    globals = buildGlobals(mappers, done);
+                    if (!globals) {
+                        return;
+                    }
+                }
 
+                console.log('run sequence ' + taskName);
                 sequence(...taskList, function (error) {
                     if (error) {
                         console.log(error.message);
@@ -87,7 +92,7 @@ function gulpCi(_gulp) {
         }
     }
 
-    function buildGlobals(mappers) {
+    function buildGlobals(mappers, error) {
         let result = {};
 
         Object.keys(mappers || {}).forEach(mapperKey => {
@@ -95,14 +100,21 @@ function gulpCi(_gulp) {
             if (typeof mapperValue === 'string') {
                 result[mapperKey] = argv[mapperValue];
                 if (!result[mapperKey]) {
-                    throw new PluginError(task, `Parameter --${mapperValue} is missing`);
+                    result.error = new Error(`Parameter --${mapperValue} is missing`);
                 }
             } else {
                 // function provided
                 result[mapperKey] = mapperValue(result);
+                if (!result[mapperKey]) {
+                    result.error = new Error(`Parameter --${mapperKey} is missing`);
+                }
             }
         });
 
+        if (result.error) {
+            error(result.error);
+            return;
+        }
         return result;
     }
 }

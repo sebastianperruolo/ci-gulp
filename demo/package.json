@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Demo of gulp-ci",
   "dependencies": {
-    "ci-gulp": "0.0.10",
+    "ci-gulp": "0.0.12",
     "gulp": "^3.9.1",
     "gulp-task-listing": "^1.1.0",
     "require-dir": "^1.0.0"
