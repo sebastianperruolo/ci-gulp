@@ -18,8 +18,6 @@ function gulpCi(_gulp) {
     };
 
     function action(name, actionSteps, mappers) {
-
-        globals = buildGlobals(mappers);
         //console.info(`action > ${name}`);
         actionSteps.forEach((actionStepTasks, i) => {
             _defineSequence(
@@ -36,7 +34,9 @@ function gulpCi(_gulp) {
         function _defineSequence(taskName, taskList) {
             //console.info(`action-define > ${taskName}`);
             _gulp.task(taskName, function (done) {
-                //console.log(`gulp.task ${taskName}`);
+                
+                globals = buildGlobals(mappers);
+
                 sequence(...taskList, function (error) {
                     if (error) {
                         console.log(error.message);
