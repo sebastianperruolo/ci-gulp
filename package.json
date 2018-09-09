@@ -1,6 +1,6 @@
 {
-  "name": "gulp-ci",
-  "version": "1.0.0",
+  "name": "ci-gulp",
+  "version": "0.0.9",
   "description": "Continuous Integration (CI) with Gulp",
   "main": "index.js",
   "scripts": {
@@ -21,5 +21,12 @@
   "bugs": {
     "url": "https://github.com/sebastianperruolo/gulp-ci/issues"
   },
-  "homepage": "https://github.com/sebastianperruolo/gulp-ci#readme"
+  "homepage": "https://github.com/sebastianperruolo/gulp-ci#readme",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "gulp-task-listing": "^1.1.0",
+    "inquirer": "^6.2.0",
+    "run-sequence": "^2.2.1",
+    "yargs": "^12.0.2"
+  }
 }
