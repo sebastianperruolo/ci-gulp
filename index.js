@@ -7,16 +7,18 @@ const sequence = require('run-sequence');
 const taskListing = require('gulp-task-listing');
 
 function gulpCi(_gulp) {
-    let globals = {}, doc = {
+    let doc = {
         tasks: {}
     };
 
+    let cliArguments = handleArguments();
 
     _gulp.task('default', taskListing);
 
     return {
         action: action,
-        task: task
+        task: task,
+        args: cliArguments.all
     };
 
     function action(name, actionSteps, mappers) {
@@ -59,9 +61,9 @@ function gulpCi(_gulp) {
             //console.info(`action-define > ${taskName}`);
             _gulp.task(taskName, function (done) {
                 if (name === taskName) {
-                    console.log('building globals ' + taskName);
-                    globals = buildGlobals(mappers, done);
-                    if (!globals) {
+                    let r = cliArguments.build(mappers);
+                    if (r) {
+                        done(r);
                         return;
                     }
                 }
@@ -92,7 +94,7 @@ function gulpCi(_gulp) {
             return (done) => {
                 console.info(`############################################`);
                 console.info(`#### TASK [${name}] requires manual intervention`);
-                let humanMessages = human(globals);
+                let humanMessages = human(cliArguments.all);
                 console.info(`\n`);
                 if (Array.isArray(humanMessages)) {
                     humanMessages.forEach(m => console.info(`\t${m}`))
@@ -118,31 +120,37 @@ function gulpCi(_gulp) {
         }
     }
 
-    function buildGlobals(mappers, error) {
-        let result = {};
 
-        Object.keys(mappers || {}).forEach(mapperKey => {
-            let mapperValue = mappers[mapperKey];
-            if (typeof mapperValue === 'string') {
-                result[mapperKey] = argv[mapperValue];
-                if (!result[mapperKey]) {
-                    result.error = new Error(`Parameter --${mapperValue} is missing`);
-                }
-            } else {
-                // function provided
-                result[mapperKey] = mapperValue(result);
-                if (!result[mapperKey]) {
-                    result.error = new Error(`Parameter --${mapperKey} is missing`);
-                }
-            }
-        });
+    function handleArguments() {
+        let args = {};
+        return {
+            all: function () {
+                return args;
+            },
+            build: buildFromMappers
+        };
 
-        if (result.error) {
-            error(result.error);
-            return;
+        function buildFromMappers(mappers) {
+            let _args = {}, error;
+
+            Object.keys(mappers || {}).forEach(mapperKey => {
+                let mapperValue = mappers[mapperKey];
+                if (typeof mapperValue === 'string') {
+                    _args[mapperKey] = argv[mapperValue];
+                    if (!_args[mapperKey]) {
+                        error = new Error(`Parameter --${mapperValue} is missing`);
+                    }
+                } else {
+                    // function provided
+                    _args[mapperKey] = mapperValue(_args);
+                }
+            });
+            args = _args;
+            return error;
         }
-        return result;
     }
+
+
 
     function cliParams(mappers) {
         return Object
@@ -153,7 +161,7 @@ function gulpCi(_gulp) {
     }
 
     function taskHumanInstructions(taskName) {
-        let humanMessages = doc.tasks[taskName](globals);
+        let humanMessages = doc.tasks[taskName](cliArguments.all);
         if (Array.isArray(humanMessages)) {
             return humanMessages.map(line => `\t${line}`).join('\n');
         }
