@@ -1,6 +1,6 @@
 const ciGulp = require('ci-gulp');
 
-ciGulp.action('feature',
+ciGulp.action('FeatureStart',
     [
         // Step 1: Checkout
         ['git:checkout:develop'],
@@ -11,5 +11,7 @@ ciGulp.action('feature',
     ], {
         featureId: 'feature-id',
         codeFreezeBranch: (args) => `fb-${args.featureId}`
-    }
+    },
+    './documents'
 );
+

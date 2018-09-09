@@ -1,6 +1,6 @@
 {
   "name": "ci-gulp",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Continuous Integration (CI) with Gulp",
   "main": "index.js",
   "scripts": {

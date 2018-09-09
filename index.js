@@ -7,7 +7,10 @@ const sequence = require('run-sequence');
 const taskListing = require('gulp-task-listing');
 
 function gulpCi(_gulp) {
-    let globals = {};
+    let globals = {}, doc = {
+        tasks: {}
+    };
+
 
     _gulp.task('default', taskListing);
 
@@ -17,7 +20,7 @@ function gulpCi(_gulp) {
     };
 
     function action(name, actionSteps, mappers) {
-        //console.info(`action > ${name}`);
+        // Define steps tasks
         actionSteps.forEach((actionStepTasks, i) => {
             _defineSequence(
                 `${name}:step${i + 1}`,
@@ -25,10 +28,32 @@ function gulpCi(_gulp) {
             );
         });
 
+        // Define action tasks
         _defineSequence(
             name,
             actionSteps.map((_, i) => `${name}:step${i + 1}`)
         );
+
+        // Define document action task
+        _gulp.task(`${name}.md`, (done) => {
+            let cliArgs = cliParams(mappers);
+            let body = `# ${name}\n`;
+            body += `> TASK \`gulp ${name} ${cliArgs}\n`;
+            body += '\n';
+            actionSteps.forEach((actionStepTasks, i) => {
+                body += `## Step ${i + 1}\n`;
+                body += `> TASK \`gulp ${name}:step${i + 1}\` ${cliArgs}\n`;
+                body += '\n';
+                actionStepTasks.forEach((task) => {
+                    body += `### Task ${task}\n`;
+                    body += '\n';
+                    body += taskHumanInstructions(task);
+                })
+                console.info(`\n`);
+            });
+            console.log(body);
+            done();
+        })
 
         function _defineSequence(taskName, taskList) {
             //console.info(`action-define > ${taskName}`);
@@ -61,6 +86,7 @@ function gulpCi(_gulp) {
 
         //console.log(`task ${name}`);
         _gulp.task(name, taskToAssign);
+        doc.tasks[name] = human;
 
         function _manualTask() {
             return (done) => {
@@ -116,6 +142,22 @@ function gulpCi(_gulp) {
             return;
         }
         return result;
+    }
+
+    function cliParams(mappers) {
+        return Object
+            .keys(mappers)
+            .map(key => mappers[key])
+            .filter(v => typeof v === 'string')
+            .join(' ');
+    }
+
+    function taskHumanInstructions(taskName) {
+        let humanMessages = doc.tasks[taskName](globals);
+        if (Array.isArray(humanMessages)) {
+            return humanMessages.map(line => `\t${line}`).join('\n');
+        }
+        return humanMessages;
     }
 }
 
