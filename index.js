@@ -18,7 +18,8 @@ function gulpCi(_gulp) {
     return {
         action: action,
         task: task,
-        args: cliArguments.all
+        args: cliArguments.all,
+        loop: loop
     };
 
     function action(name, actionSteps, mappers) {
@@ -80,8 +81,10 @@ function gulpCi(_gulp) {
             });
             //console.info(`action-define < ${taskName}`);
         }
-        //console.info(`action < ${name}`);
     }
+
+    
+
 
     function task(name, human, optGulpTask) {
         const taskToAssign = (optGulpTask ? optGulpTask : _manualTask());
@@ -150,7 +153,44 @@ function gulpCi(_gulp) {
         }
     }
 
+    /**
+     * Will create a task for each key
+     * @param {string} loopTask - prefix for gulp tasks
+     * @param {Object} loopItems - each key will be suffix for gulp task
+     */
+    function loop(loopGroup, loopItems) {
+        return {
+            task: function (taskName, human, gulpTask) {
+                let subtasks = [];
+                Object
+                    .keys(loopItems)
+                    .forEach(key => {
+                        let loopTaskItem = `${loopGroup}:${taskName}:${key}`;
+                        let value = loopItems[key];
+                        subtasks.push(loopTaskItem);
+                        let wrapGulpTask = (gulpTask? (done) => gulpTask(done, value) : undefined);
+                        task(loopTaskItem, (args) => human({ ...args, loop: value }), wrapGulpTask);
+                    })
+                _defineSequence2(
+                    `${loopGroup}:${taskName}`,
+                    subtasks
+                );
+            }
+        };
 
+        function _defineSequence2(taskName, taskList) {
+            _gulp.task(taskName, function (done) {
+                sequence(...taskList, function (error) {
+                    if (error) {
+                        console.log(error.message);
+                    } else {
+                        console.log(`${taskName} terminó OK`);
+                    }
+                    done(error);
+                });
+            });
+        }
+    }
 
     function cliParams(mappers) {
         return Object
