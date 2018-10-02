@@ -97,7 +97,7 @@ function gulpCi(_gulp) {
             return (done) => {
                 console.info(`############################################`);
                 console.info(`#### TASK [${name}] requires manual intervention`);
-                let humanMessages = human(cliArguments.all);
+                let humanMessages = human(cliArguments.all());
                 console.info(`\n`);
                 if (Array.isArray(humanMessages)) {
                     humanMessages.forEach(m => console.info(`\t${m}`))
@@ -201,7 +201,7 @@ function gulpCi(_gulp) {
     }
 
     function taskHumanInstructions(taskName) {
-        let humanMessages = doc.tasks[taskName](cliArguments.all);
+        let humanMessages = doc.tasks[taskName](cliArguments.all());
         if (Array.isArray(humanMessages)) {
             return humanMessages.map(line => `\t${line}`).join('\n');
         }
