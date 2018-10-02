@@ -5,6 +5,9 @@ const inquirer = require('inquirer');
 const sequence = require('run-sequence');
 // Provides an easy way to get a listing of your tasks from your gulpfile.
 const taskListing = require('gulp-task-listing');
+var createFile = require('create-file');
+const {UserConfigBuilder} = require('./ci/utils.js');
+const path     = require('path');
 
 function gulpCi(_gulp) {
     let doc = {
@@ -13,14 +16,34 @@ function gulpCi(_gulp) {
 
     let cliArguments = handleArguments();
 
-    _gulp.task('default', taskListing);
+    
 
     return {
         action: action,
         task: task,
         args: cliArguments.all,
-        loop: loop
+        loop: loop,
+        init: init
     };
+
+    function init(initUserConfig) {
+        const userConfigFileName = path.dirname(path.dirname(__dirname)) + '/..user-config.json';
+
+        //console.log('ci-gulp init begin: ', path.dirname(path.dirname(__dirname)));
+        createFile(userConfigFileName, '{}', function (err) {
+            //console.log('File .user-config.json exists.');
+            if (err) {
+                console.error('Error!', err);
+            }
+            // console.log(__filename);
+            // console.log(__dirname);
+            // file either already exists or is now created (including non existing directories)
+            var fileUserConfig = require(userConfigFileName);
+            initUserConfig(UserConfigBuilder(fileUserConfig));
+            //console.log('User config', err);
+        });
+        //console.log('ci-gulp init end');
+    }
 
     function action(name, actionSteps, mappers) {
         // Define steps tasks
@@ -97,7 +120,7 @@ function gulpCi(_gulp) {
             return (done) => {
                 console.info(`############################################`);
                 console.info(`#### TASK [${name}] requires manual intervention`);
-                let humanMessages = human(cliArguments.all);
+                let humanMessages = human(cliArguments.all());
                 console.info(`\n`);
                 if (Array.isArray(humanMessages)) {
                     humanMessages.forEach(m => console.info(`\t${m}`))
