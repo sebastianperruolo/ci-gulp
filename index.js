@@ -125,7 +125,7 @@ function gulpCi(_gulp) {
 
 
     function handleArguments() {
-        let args = {};
+        let args = argv;
         return {
             all: function () {
                 return args;
